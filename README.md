@@ -1,9 +1,14 @@
-Gssapi-proxy
-============
+# Authentication-proxy
 
-Simple http proxy for Windows. Uses running user's kerberos login to respond to kerberos/GSSAPI challenges (401/Www-Authenticate) on behalf of the client. Potentially useful for pentesting, and developers working with kerberos/GSSAPI. Implemented in Go, using SSPI. Highly extensible.
+Simple, performing authentication proxy. It injects the current session Kerberos token to the communication between a client (unable to perform the negotiate authentication scheme) and a corporate proxy accessible thtough Negotiate.
 
-Tested on Windows 8.1 (32-bit), with Heimdal KDC and MIT's implementation of GSSAPI libraries at the other end. Should run on Windows 2000+, and might fall back to NTLM if building kerberos context fails.
+## Which is the problem, exactly ?
+
+Many package managers, source control managers are not able to perform a Negotiate exchange to authenticate the communication. This means that npm, git, docker, bower and so on will be unable to pass through a corporate proxy.
+
+Some tools, like CNTLM, allow you to pass your NTLM token to the proxy. This is a different protocol, less secure than Negotiate. A patch for CNTLM allows you to use the Negotiate protocol, but no binary is available nowadays. Moreover, in my personal  environment, CNTLM is slow. It won't be able to follow the rhythm of the exchanges between npm and the npm registry.
+
+(Please note that the current code doesn't allow you to complete the task described above)
 
 Building
 --------
