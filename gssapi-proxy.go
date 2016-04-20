@@ -9,6 +9,8 @@ import (
 "encoding/base64"
 "net/http"
 "strings"
+"os"
+"net/url"
 )
 
 var (
@@ -112,6 +114,7 @@ type SecBufferDesc struct {
     Buffers *SecBuffer
 }
 
+// TimeStamp is an alias to Filetime (available only on Windows)
 type TimeStamp syscall.Filetime
 
 type Credentials struct {
@@ -170,6 +173,10 @@ func HasNegotiateChallenge() goproxy.RespConditionFunc {
 func main() {
     proxy := goproxy.NewProxyHttpServer()
     proxy.Verbose = true
+
+    // transfer all the requests via the proxy specified on the command line as first positional argument
+    proxy.Tr = &http.Transport { Proxy: func (req *http.Request) (*url.URL, error) { return url.Parse(os.Args[1]) } }
+
     proxy.OnResponse(HasNegotiateChallenge()).DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx)*http.Response {
         ctx.Logf("Received 401 and Www-Authenticate from server, proceeding to reply")
 
