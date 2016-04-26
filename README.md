@@ -12,7 +12,7 @@ Some tools, like CNTLM, allow you to pass your NTLM token to the proxy. This is 
 
 # Building
 
-The following command should build the application. It is a little bit large, but it should not require any dependencies from target the systems.
+The following command will build the application.
 
 ```
 go get github.com/nilleb/authentication-proxy
@@ -25,7 +25,7 @@ go get github.com/nilleb/authentication-proxy
     $ .\authentication-proxy.exe http://a_corporate_proxy:80
 
     :: authentication-proxy listens on 8080
-    $ set HTTPS_PROXY-http://127.0.0.1:8080
+    $ set HTTPS_PROXY=http://127.0.0.1:8080
     :: one of the following ..
     $ npm install
     $ git clone https://github.com/..
@@ -33,8 +33,8 @@ go get github.com/nilleb/authentication-proxy
 
 # Notes
 
-* You must run the application as user that has valid kerberos login and tickets. 
+* You must run the application as user having a valid kerberos session ticket (i.e. log in as your corporate user, then start this software)
 * Does not reply to mutual authentication request, but it's probably somewhat rare to bump into with web applications.
-* 64-bit platforms should still offer 32-bit compatible library/API so the application should compile and work. There's afaik no reason why the application should be 64-bit.
+* 64-bit platforms should still offer 32-bit compatible library/API so the application should compile and work. There's afaik no reason for which the application should be 64-bit.
 * The application does not add proxy headers, or manipulate any other headers besides Www-Authenticate/Authorization intentionally.
-* Works only on Windows (because the syscalls being called)
+* Works only on Windows (because of the syscalls being called)
