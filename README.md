@@ -1,8 +1,10 @@
 # Authentication-proxy
 
+[![Build status](https://ci.appveyor.com/api/projects/status/u0tbng5wockjgd97?svg=true)](https://ci.appveyor.com/project/IvoBellinSalarin/authentication-proxy)
+
 Simple, performing authentication proxy. It injects the current session Kerberos token to the communication between a client (unable to perform the negotiate authentication scheme) and a corporate proxy accessible thtough Negotiate.
 
-## Which is the problem, exactly ?
+## Which is the use case, exactly ?
 
 Many package managers, source control managers are not able to perform a Negotiate exchange to authenticate the communication. This means that npm, git, docker, bower and so on will be unable to pass through a corporate proxy.
 
@@ -14,7 +16,6 @@ The following command should build the application. It is a little bit large, bu
 
 ```
 go get github.com/nilleb/authentication-proxy
-go build github.com/nilleb/authentication-proxy
 ```
 
 ## User manual
