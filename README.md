@@ -2,7 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/u0tbng5wockjgd97?svg=true)](https://ci.appveyor.com/project/IvoBellinSalarin/authentication-proxy)
 
-Simple, performing authentication proxy. It injects the current session Kerberos token to the communication between a client (unable to perform the negotiate authentication scheme) and a corporate proxy accessible thtough Negotiate.
+A simple Windows Authentication proxy. This application injects the current session's Kerberos token in the communication between a client software and a corporate proxy. The client software is unable to perform the Negotiate authentication exchanges and the corporate proxy only accepts authenticated users. Usually, the corporate proxy accepts NTLM and Negotiate as authentication protocols.
 
 ## Which is the use case, exactly ?
 
@@ -33,7 +33,7 @@ go get github.com/nilleb/authentication-proxy
 
 # Notes
 
-* You must run the application as user having a valid kerberos session ticket (i.e. log in as your corporate user, then start this software)
+* You must run the application as user having a valid kerberos session ticket (i.e. log in with your corporate identity, then start this software)
 * Does not reply to mutual authentication request, but it's probably somewhat rare to bump into with web applications.
 * 64-bit platforms should still offer 32-bit compatible library/API so the application should compile and work. There's afaik no reason for which the application should be 64-bit.
 * The application does not add proxy headers, or manipulate any other headers besides Www-Authenticate/Authorization intentionally.
