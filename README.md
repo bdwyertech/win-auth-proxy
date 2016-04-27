@@ -6,11 +6,12 @@ A simple Windows Authentication proxy. This application injects the current sess
 
 ## Which is the use case, exactly ?
 
-Many package managers, source control managers are not able to perform a Negotiate exchange to authenticate the communication. This means that npm, git, docker, bower and so on will be unable to pass through a corporate proxy.
+Many package managers and source control managers are not able to perform a Negotiate exchange to authenticate the communication. This means that npm, git, docker, bower and so on will be unable to pass through a corporate proxy.
 
-Some tools, like CNTLM, allow you to pass your NTLM token to the proxy. This is a different protocol, less secure than Negotiate. A patch for CNTLM allows you to use the Negotiate protocol, but no binary is available nowadays. Moreover, in my personal  environment, CNTLM is slow. It won't be able to follow the rhythm of the exchanges between npm and the npm registry.
+Some tools, like CNTLM, allow you to pass your NTLM token to the proxy. This is a different protocol, less secure than Negotiate. CNTLM shall be configured writing your username/domain/encrypted password to a file.
+A patch for CNTLM allows you to use the Negotiate protocol (avoiding the need for a password saved in a file), but no binary is available nowadays. Moreover, in my personal  environment, CNTLM is *slow*: it won't be able to follow the rhythm of the exchanges between npm and the npm registry.
 
-# Building
+## Building
 
 The following command will build the application.
 
@@ -22,16 +23,17 @@ go get github.com/nilleb/authentication-proxy
 
 	:: authentication-proxy proxies a corporate proxy on port 80
 	:: this proxy supports Negotiate or NTLM
-    $ .\authentication-proxy.exe http://a_corporate_proxy:80
+    > .\authentication-proxy.exe http://a_corporate_proxy:80
 
     :: authentication-proxy listens on 8080
-    $ set HTTPS_PROXY=http://127.0.0.1:8080
-    :: one of the following ..
-    $ npm install
-    $ git clone https://github.com/..
-    $ go get github.com/..
+    > set HTTPS_PROXY=http://127.0.0.1:8080
 
-# Notes
+    :: one of the following ..
+    > npm install
+    > git clone https://github.com/..
+    > go get github.com/..
+
+## Notes
 
 * You must run the application as user having a valid kerberos session ticket (i.e. log in with your corporate identity, then start this software)
 * Does not reply to mutual authentication request, but it's probably somewhat rare to bump into with web applications.
