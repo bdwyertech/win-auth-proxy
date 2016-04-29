@@ -5,7 +5,7 @@ import (
     "github.com/jackwakefield/gopac"
 )
 
-func autodetectProxy() string {
+func autodetectProxy(host string) (string, error) {
     parser := new(gopac.Parser)
 
     // use parser.Parse(path) to parse a local file
@@ -14,15 +14,17 @@ func autodetectProxy() string {
     // https://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol
     if err := parser.ParseUrl("http://wpad/wpad.dat"); err != nil {
         log.Fatalf("Failed to parse PAC (%s)", err)
+        return "", err
     }
 
-    // find the proxy entry for host google.com
-    entry, err := parser.FindProxy("", "google.com")
+    // find the proxy entry for host
+    entry, err := parser.FindProxy("", host)
 
     if err != nil {
         log.Fatalf("Failed to find a proxy entry (%s)", err)
+        return "", err
     }
 
     log.Println(entry)
-    return entry
+    return entry, err
 }
