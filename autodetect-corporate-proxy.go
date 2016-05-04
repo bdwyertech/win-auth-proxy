@@ -13,7 +13,7 @@ func autodetectProxy(host string) (string, error) {
     // https://technet.microsoft.com/fr-fr/library/cc995261.aspx
     // https://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol
     if err := parser.ParseUrl("http://wpad/wpad.dat"); err != nil {
-        log.Fatalf("Failed to parse PAC (%s)", err)
+        log.Printf("Failed to parse PAC (%s)", err)
         return "", err
     }
 
@@ -21,10 +21,9 @@ func autodetectProxy(host string) (string, error) {
     entry, err := parser.FindProxy("", host)
 
     if err != nil {
-        log.Fatalf("Failed to find a proxy entry (%s)", err)
+        log.Printf("Failed to find a proxy entry (%s)", err)
         return "", err
     }
 
-    log.Println(entry)
     return entry, err
 }
