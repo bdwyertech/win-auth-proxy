@@ -2,13 +2,13 @@ package main
 
 import "flag"
 
-type Arguments struct {
+type arguments struct {
     proxy string
     autodetectProxy bool
 }
 
-func Parse(commandLine []string) Arguments {
-    var args = Arguments{}
+func parse() arguments {
+    var args = arguments{}
     flag.StringVar(&args.proxy, "proxy", "", "corporate proxy address")
     flag.StringVar(&args.proxy, "x", "", "corporate proxy address")
     flag.BoolVar(&args.autodetectProxy, "autodetect", false, "try to autodetect the corporate proxy")

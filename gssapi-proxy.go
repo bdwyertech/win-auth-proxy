@@ -16,9 +16,14 @@ func HasNegotiateChallenge() goproxy.RespConditionFunc {
 }
 
 func main() {
+    var args = parse()
     proxy := goproxy.NewProxyHttpServer()
     proxy.Verbose = true
 
+    if args.autodetectProxy {
+        args.proxy, _ = autodetectProxy("google.com")
+    }
+    
     // transfer all the requests via the proxy specified on the command line as first positional argument
     proxy.Tr = &http.Transport { Proxy: func (req *http.Request) (*url.URL, error) { return url.Parse(os.Args[1]) } }
 

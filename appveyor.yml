@@ -1,4 +1,4 @@
-version: 0.1.{build}
+version: 0.2.{build}
 clone_folder: C:\GOPATH\src\github.com\nilleb\authentication-proxy
 environment:
   GOPATH: C:\GOPATH\src
