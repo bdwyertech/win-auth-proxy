@@ -157,12 +157,10 @@ func (c *Credentials) NewContext(target string) (*Context, SECURITY_STATUS, erro
     return &x, s, nil
 }
 
-type CurrentOsGssImplementation struct 
-{
+type CurrentOsGssImplementation struct {
 }
 
-func (t CurrentOsGssImplementation) AcquireCredentials(ctx *goproxy.ProxyCtx, username string) (*Credentials)
-{
+func (t CurrentOsGssImplementation) AcquireCredentials(ctx *goproxy.ProxyCtx, username string) (*Credentials) {
     cred, status, err := AcquireCredentials("")
     if err != nil {
         ctx.Warnf("AcquireCredentials failed: %v %s", err, errors[int64(status)])
@@ -172,8 +170,7 @@ func (t CurrentOsGssImplementation) AcquireCredentials(ctx *goproxy.ProxyCtx, us
     return cred
 }
 
-func (t CurrentOsGssImplementation) GetTicketFromCredentials(ctx *goproxy.ProxyCtx, cred *Credentials) []byte
-{
+func (t CurrentOsGssImplementation) GetTicketFromCredentials(ctx *goproxy.ProxyCtx, cred *Credentials) []byte {
     // Initialize Context
     tgt := "http/" + strings.ToUpper(strings.Split(r.Request.Host,":")[0])
     ctx.Logf("Requesting for context against SPN %s",tgt)
