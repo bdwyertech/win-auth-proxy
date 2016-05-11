@@ -1,12 +1,13 @@
 package main
 
 import (
-"log"
-"github.com/elazarl/goproxy"
-"encoding/base64"
-"net/http"
-"os"
-"net/url"
+    "fmt"
+    "log"
+    "github.com/elazarl/goproxy"
+    "encoding/base64"
+    "net/http"
+    "os"
+    "net/url"
 )
 
 func HasNegotiateChallenge() goproxy.RespConditionFunc {
@@ -16,24 +17,33 @@ func HasNegotiateChallenge() goproxy.RespConditionFunc {
 }
 
 func main() {
-    var args = parse()
+    opts := Parse(os.Args)
+
+    if opts.autodetectProxy {   
+        v, err := autodetectProxy("google.com")
+        if err != nil {
+            fmt.Printf("error raised during proxy autodetection: %v", err)
+        } else {
+            fmt.Printf("autodetected proxy: %v", v)     
+        }
+        os.Exit(0)
+    }
+
     proxy := goproxy.NewProxyHttpServer()
     proxy.Verbose = true
 
-    if args.autodetectProxy {
-        args.proxy, _ = autodetectProxy("google.com")
+    if opts.proxy != "" {
+        // transfer all the requests via the proxy specified on the command line as first positional argument
+        proxy.Tr = &http.Transport { Proxy: func (req *http.Request) (*url.URL, error) { return url.Parse(opts.proxy) } }
     }
-    
-    // transfer all the requests via the proxy specified on the command line as first positional argument
-    proxy.Tr = &http.Transport { Proxy: func (req *http.Request) (*url.URL, error) { return url.Parse(os.Args[1]) } }
 
     proxy.OnResponse(HasNegotiateChallenge()).DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx)*http.Response {
         ctx.Logf("Received 401 and Www-Authenticate from server, proceeding to reply")
 
         impl := CurrentOsGssImplementation{}
-        
-        ticket:= impl.GetTicket(ctx)
-                
+
+        ticket:= impl.GetTicket(ctx, r.Request.Host)
+
         // Generate the Authorization header
         headerstr := "Negotiate " + base64.StdEncoding.EncodeToString(ticket)
         ctx.Logf("Generated header %s", headerstr)
@@ -50,5 +60,5 @@ func main() {
         // Return the new response in place of the original
         return newr
     })
-    log.Fatal(http.ListenAndServe(":8080", proxy))
+    log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", opts.listeningPort), proxy))
 }

@@ -9,6 +9,6 @@ import "github.com/elazarl/goproxy"
 type CurrentOsGssImplementation struct {
 }
 
-func (t CurrentOsGssImplementation) GetTicket(ctx *goproxy.ProxyCtx) []byte {
+func (t CurrentOsGssImplementation) GetTicket(ctx *goproxy.ProxyCtx, host string) []byte {
     return []byte{}
 }
