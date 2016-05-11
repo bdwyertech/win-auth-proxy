@@ -23,7 +23,7 @@ go get github.com/nilleb/authentication-proxy
 
 	:: authentication-proxy proxies a corporate proxy on port 80
 	:: this proxy supports Negotiate or NTLM
-    > .\authentication-proxy.exe http://a_corporate_proxy:80
+    > .\authentication-proxy.exe -x http://a_corporate_proxy:80
 
     :: authentication-proxy listens on 8080
     > set HTTPS_PROXY=http://127.0.0.1:8080
@@ -32,6 +32,18 @@ go get github.com/nilleb/authentication-proxy
     > npm install
     > git clone https://github.com/..
     > go get github.com/..
+
+### other options
+
+    :: autodetects the corporate proxy (and returns its address)
+    > .\authentication_proxy -a
+    
+    :: changes the listening port
+    > .\authentication_proxy -p 3128
+    
+    :: no arguments at all: doesn't transfer the requests to the corporate proxy
+    :: it's still useful if you have an authenticated corporate package source
+    > .\authentication_proxy
 
 ## Notes
 
