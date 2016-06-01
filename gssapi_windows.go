@@ -5,7 +5,6 @@ import (
     "unsafe"
     "github.com/elazarl/goproxy"
     "fmt"
-    "strings"
     )
     
 var (
@@ -172,11 +171,9 @@ func (t CurrentOsGssImplementation) AcquireCredentials(ctx *goproxy.ProxyCtx, us
     return cred
 }
 
-func (t CurrentOsGssImplementation) GetTicketFromCredentials(ctx *goproxy.ProxyCtx, cred *Credentials, host string) []byte {
-    // Initialize Context
-    tgt := "http/" + strings.ToUpper(strings.Split(host,":")[0])
-    ctx.Logf("Requesting for context against SPN %s",tgt)
-    ctxt, status, err := cred.NewContext(tgt)
+func (t CurrentOsGssImplementation) GetTicketFromCredentials(ctx *goproxy.ProxyCtx, cred *Credentials, spn string) []byte {
+    ctx.Logf("Requesting for context against SPN %s", spn)
+    ctxt, status, err := cred.NewContext(spn)
     if err != nil {
         ctx.Warnf("NewContext failed: %v", err)
     }
@@ -185,9 +182,9 @@ func (t CurrentOsGssImplementation) GetTicketFromCredentials(ctx *goproxy.ProxyC
     return ticket
 }
 
-func (t CurrentOsGssImplementation) GetTicket(ctx *goproxy.ProxyCtx, host string) []byte {
+func (t CurrentOsGssImplementation) GetTicket(ctx *goproxy.ProxyCtx, spn string) []byte {
         cred := t.AcquireCredentials(ctx, "")
         defer cred.Close()
-        ticket:= t.GetTicketFromCredentials(ctx, cred, host)
+        ticket:= t.GetTicketFromCredentials(ctx, cred, spn)
         return ticket
 }

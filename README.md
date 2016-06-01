@@ -4,7 +4,7 @@
 
 A simple Windows Authentication proxy. This application injects the current session's Kerberos token in the communication between a client software and a corporate proxy. The client software is unable to perform the Negotiate authentication exchanges and the corporate proxy only accepts authenticated users. Usually, the corporate proxy accepts NTLM and Negotiate as authentication protocols.
 
-## Which is the use case, exactly ?
+## Which is the use case, exactly?
 
 Many package managers and source control managers are not able to perform a Negotiate exchange to authenticate the communication. This means that npm, git, docker, bower and so on will be unable to pass through a corporate proxy.
 
@@ -52,3 +52,4 @@ go get github.com/nilleb/authentication-proxy
 * 64-bit platforms should still offer 32-bit compatible library/API so the application should compile and work. There's afaik no reason for which the application should be 64-bit.
 * The application does not add proxy headers, or manipulate any other headers besides Www-Authenticate/Authorization intentionally.
 * Works only on Windows (because of the syscalls being called)
+* Works only when the proxied proxy/host supports Negotiate and is properly configured to accept this kind of authentication
