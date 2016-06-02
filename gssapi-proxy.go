@@ -58,6 +58,12 @@ func authenticate(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
     return newr
 }
 
+// when the client tries to establish an HTTPS connection
+// INFO: Running 0 CONNECT handlers
+// => memory leak
+// the client gets a 502 (Bad Gateway)
+// elazarl/goproxy/https.go: line 96: proxy.connectDial fails: the corporate proxy returns 407 with a Proxy-Authenticate header, but the OnResponse handler is not triggered!
+// how to alter the connectDial request in order to inject the required Proxy-Authorization header?
 func authenticateProxy(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
     ctx.Logf("Received 407 and Proxy-Authenticate from server, proceeding to reply")
 
