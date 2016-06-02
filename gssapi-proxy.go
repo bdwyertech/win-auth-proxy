@@ -22,13 +22,13 @@ func contains(s []string, e string) bool {
 
 func hasNegotiateChallenge() goproxy.RespConditionFunc {
     return func(resp *http.Response, ctx *goproxy.ProxyCtx) bool {
-        return (resp.StatusCode == 401 && (contains(resp.Header["WWW-Authenticate"], "Negotiate") || contains(resp.Header["Www-Authenticate"], "Negotiate")))
+        return (resp != nil && resp.StatusCode == 401 && (contains(resp.Header["WWW-Authenticate"], "Negotiate") || contains(resp.Header["Www-Authenticate"], "Negotiate")))
     }
 }
 
 func hasProxyNegotiateChallenge() goproxy.RespConditionFunc {
     return func(resp *http.Response, ctx *goproxy.ProxyCtx) bool {
-        return (resp.StatusCode == 407 && contains(resp.Header["Proxy-Authenticate"], "Negotiate"))
+        return (resp != nil && resp.StatusCode == 407 && contains(resp.Header["Proxy-Authenticate"], "Negotiate"))
     }
 }
 
