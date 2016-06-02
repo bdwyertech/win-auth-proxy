@@ -102,6 +102,13 @@ func getHTTPClient() http.Client {
     return client
 }
 
+
+// TraceRequests empty comment
+func TraceRequests(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+    ctx.Logf("requesting %s, %s", r.Host, r.URL)
+    return r, nil
+}
+
 var opts Arguments
 
 func main() {
@@ -118,6 +125,7 @@ func main() {
     
     proxy := goproxy.NewProxyHttpServer()
     
+    proxy.OnRequest().DoFunc(TraceRequests)
     /*
     hijack connect: intercept the request, add the Proxy-Authorization header then send it to the remote host
     proxy.OnRequest().HijackConnect(func(req *http.Request, client net.Conn, ctx *goproxy.ProxyCtx) {
