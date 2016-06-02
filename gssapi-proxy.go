@@ -116,7 +116,20 @@ func main() {
         os.Exit(0)
     }
 
+    
     proxy := goproxy.NewProxyHttpServer()
+    
+    // behave as a MITM
+    // the client fails with a TrustFailure (Le certificat distant n'est pas valide selon la procédure de validation.)
+    // probably because the client expects an SSL Hello, but it receives a plain HTTP response
+    /*proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+	proxy.OnRequest().DoFunc(func (req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		if req.URL.Scheme == "https" {
+			req.URL.Scheme = "http"
+		}
+		return req, nil
+	})*/
+    
     proxy.Verbose = true
 
     if opts.proxy != "" {
