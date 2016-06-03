@@ -53,4 +53,4 @@ go get github.com/nilleb/authentication-proxy
 * The application does not add proxy headers, or manipulate any other headers besides Www-Authenticate/Authorization intentionally.
 * Works only on Windows (because of the syscalls being called)
 * Works only when the proxied proxy/host supports Negotiate and is properly configured to accept this kind of authentication
-* doesn't work with https (yet to determine why)
+* doesn't work with https (the tcp socket is being closed unexpectedly)

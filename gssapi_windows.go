@@ -3,9 +3,8 @@ package main
 import (
     "syscall"
     "unsafe"
-    "github.com/elazarl/goproxy"
     "fmt"
-    )
+)
     
 var (
     modsecur32 = syscall.NewLazyDLL("secur32.dll")
@@ -14,7 +13,7 @@ var (
     procFreeCredentialsHandle      = modsecur32.NewProc("FreeCredentialsHandle")
     procInitializeSecurityContextW = modsecur32.NewProc("InitializeSecurityContextW")
 
-    errors = map[int64]string{
+    sec_errors = map[int64]string{
       0x80090300:  "SEC_E_INSUFFICIENT_MEMORY",
       0x80090304:  "SEC_E_INTERNAL_ERROR",
       0x8009030E:  "SEC_E_NO_CREDENTIALS",
@@ -158,33 +157,37 @@ func (c *Credentials) NewContext(target string) (*Context, SECURITY_STATUS, erro
     return &x, s, nil
 }
 
+// CurrentOsGssImplementation is a GssApiImplementation for the windows OS
 type CurrentOsGssImplementation struct {
 }
 
-func (t CurrentOsGssImplementation) AcquireCredentials(ctx *goproxy.ProxyCtx, username string) (*Credentials) {
+// AcquireCredentials gets the credentials for the given username
+func (t CurrentOsGssImplementation) AcquireCredentials(username string) (*Credentials) {
     cred, status, err := AcquireCredentials("")
     if err != nil {
-        ctx.Warnf("AcquireCredentials failed: %v %s", err, errors[int64(status)])
+        fmt.Printf("AcquireCredentials failed: %v %s", err, sec_errors[int64(status)])
     } else {
-        ctx.Logf("AcquireCredentials success: status=0x%x", status)
+        fmt.Printf("AcquireCredentials success: status=0x%x", status)
     }
     return cred
 }
 
-func (t CurrentOsGssImplementation) GetTicketFromCredentials(ctx *goproxy.ProxyCtx, cred *Credentials, spn string) []byte {
-    ctx.Logf("Requesting for context against SPN %s", spn)
+// GetTicketFromCredentials gets a ticket for the given credentials, spn
+func (t CurrentOsGssImplementation) GetTicketFromCredentials(cred *Credentials, spn string) []byte {
+    fmt.Printf("Requesting for context against SPN %s", spn)
     ctxt, status, err := cred.NewContext(spn)
     if err != nil {
-        ctx.Warnf("NewContext failed: %v", err)
+        fmt.Printf("NewContext failed: %v", err)
     }
-    ctx.Logf("NewContext success: status=0x%x errorcode=%s", status, errors[int64(status)]) 
+    fmt.Printf("NewContext success: status=0x%x errorcode=%s", status, sec_errors[int64(status)]) 
     ticket := ctxt.Data[0:ctxt.Buffer.Count]
     return ticket
 }
 
-func (t CurrentOsGssImplementation) GetTicket(ctx *goproxy.ProxyCtx, spn string) []byte {
-        cred := t.AcquireCredentials(ctx, "")
+// GetTicket gets a ticket for the given spn
+func (t CurrentOsGssImplementation) GetTicket(spn string) []byte {
+        cred := t.AcquireCredentials("")
         defer cred.Close()
-        ticket:= t.GetTicketFromCredentials(ctx, cred, spn)
+        ticket:= t.GetTicketFromCredentials(cred, spn)
         return ticket
 }

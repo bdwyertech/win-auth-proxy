@@ -1,90 +1,21 @@
-2016/06/02 16:49:59 [247] WARN: New request failed: Get http://registry.npmjs.org/mime-db: http: error connecting to proxy http://192.168.211.12:80: dial tcp 192.168.211.12:80: connectex: Une tentative de connexion a échoué car le parti connecté n’a pas répondu convenablement au-delà d’une certaine durée ou une connexion établie a échoué car l’hôte de connexion n’a pas répondu.
-2016/06/02 16:49:59 [247] INFO: Got response, forwarding it back to client
-2016/06/02 16:49:59 http: panic serving 127.0.0.1:25574: runtime error: invalid memory address or nil pointer dereference
-goroutine 63 [running]:
-net/http.(*conn).serve.func1(0xc082212280)
+2016/06/02 17:04:43 http: panic serving 127.0.0.1:26675: runtime error: invalid memory address or nil pointer dereference
+goroutine 28 [running]:
+net/http.(*conn).serve.func1(0xc08206f300)
         C:/Go/src/net/http/server.go:1389 +0xc8
-panic(0x909ce0, 0xc082002080)
+panic(0x909d00, 0xc082002080)
         C:/Go/src/runtime/panic.go:426 +0x4f7
-github.com/elazarl/goproxy.(*ProxyHttpServer).ServeHTTP(0xc08205cb80, 0x11fb9e8, 0xc08304be10, 0xc082a467e0)
+github.com/elazarl/goproxy.(*ProxyHttpServer).ServeHTTP(0xc08206eb80, 0x2eb6088, 0xc082c02750, 0xc0828c7dc0)
         c:/sources/go/src/github.com/elazarl/goproxy/proxy.go:127 +0xf4d
-net/http.serverHandler.ServeHTTP(0xc08205cc80, 0x11fb9e8, 0xc08304be10, 0xc082a467e0)
+net/http.serverHandler.ServeHTTP(0xc08206ec80, 0x2eb6088, 0xc082c02750, 0xc0828c7dc0)
         C:/Go/src/net/http/server.go:2081 +0x1a5
-net/http.(*conn).serve(0xc082212280)
-        C:/Go/src/net/http/server.go:1472 +0xf35
-created by net/http.(*Server).Serve
-        C:/Go/src/net/http/server.go:2137 +0x455
- 
-
- 2016/06/02 16:53:36 http: panic serving 127.0.0.1:25558: runtime error: invalid memory address or nil pointer dereference
-goroutine 47 [running]:
-net/http.(*conn).serve.func1(0xc08205da80)
-        C:/Go/src/net/http/server.go:1389 +0xc8
-panic(0x909ce0, 0xc082002080)
-        C:/Go/src/runtime/panic.go:426 +0x4f7
-main.hasNegotiateChallenge.func1(0x0, 0xc0824e2730, 0x1)
-        c:/sources/go/src/github.com/nilleb/authentication-proxy/gssapi-proxy.go:25 +0x23
-github.com/elazarl/goproxy.RespConditionFunc.HandleResp(0xaf9cc8, 0x0, 0xc0824e2730, 0x40dd9c)
-        c:/sources/go/src/github.com/elazarl/goproxy/dispatcher.go:43 +0x37
-github.com/elazarl/goproxy.(*ProxyConds).Do.func1(0x0, 0xc0824e2730, 0x9a2310)
-        c:/sources/go/src/github.com/elazarl/goproxy/dispatcher.go:280 +0x1c5
-github.com/elazarl/goproxy.FuncRespHandler.Handle(0xc082100fe0, 0x0, 0xc0824e2730, 0xc08304d120)
-        c:/sources/go/src/github.com/elazarl/goproxy/actions.go:35 +0x37
-github.com/elazarl/goproxy.(*ProxyHttpServer).filterResponse(0xc08205cb80, 0x0, 0xc0824e2730, 0x0)
-        c:/sources/go/src/github.com/elazarl/goproxy/proxy.go:69 +0xe4
-github.com/elazarl/goproxy.(*ProxyHttpServer).ServeHTTP(0xc08205cb80, 0x11fb9e8, 0xc0831a5930, 0xc0832dc0e0)
-        c:/sources/go/src/github.com/elazarl/goproxy/proxy.go:115 +0x565
-net/http.serverHandler.ServeHTTP(0xc08205cc80, 0x11fb9e8, 0xc0831a5930, 0xc0832dc0e0)
-        C:/Go/src/net/http/server.go:2081 +0x1a5
-net/http.(*conn).serve(0xc08205da80)
+net/http.(*conn).serve(0xc08206f300)
         C:/Go/src/net/http/server.go:1472 +0xf35
 created by net/http.(*Server).Serve
         C:/Go/src/net/http/server.go:2137 +0x455
 
-net/http.(*conn).serve.func1(0xc082116200)
-        C:/Go/src/net/http/server.go:1389 +0xc8
-panic(0x909ce0, 0xc082002080)
-        C:/Go/src/runtime/panic.go:426 +0x4f7
-main.hasNegotiateChallenge.func1(0x0, 0xc082292f00, 0x1)
-        c:/sources/go/src/github.com/nilleb/authentication-proxy/gssapi-proxy.go:25 +0x23
-github.com/elazarl/goproxy.RespConditionFunc.HandleResp(0xaf9cc8, 0x0, 0xc082292f00, 0x40dd9c)
-        c:/sources/go/src/github.com/elazarl/goproxy/dispatcher.go:43 +0x37
-github.com/elazarl/goproxy.(*ProxyConds).Do.func1(0x0, 0xc082292f00, 0x9a2310)
-        c:/sources/go/src/github.com/elazarl/goproxy/dispatcher.go:280 +0x1c5
-github.com/elazarl/goproxy.FuncRespHandler.Handle(0xc082100fe0, 0x0, 0xc082292f00, 0xc08304d4c0)
-        c:/sources/go/src/github.com/elazarl/goproxy/actions.go:35 +0x37
-github.com/elazarl/goproxy.(*ProxyHttpServer).filterResponse(0xc08205cb80, 0x0, 0xc082292f00, 0x0)
-        c:/sources/go/src/github.com/elazarl/goproxy/proxy.go:69 +0xe4
-github.com/elazarl/goproxy.(*ProxyHttpServer).ServeHTTP(0xc08205cb80, 0x11fb9e8, 0xc0831a5860, 0xc082a46ee0)
-        c:/sources/go/src/github.com/elazarl/goproxy/proxy.go:115 +0x565
-net/http.serverHandler.ServeHTTP(0xc08205cc80, 0x11fb9e8, 0xc0831a5860, 0xc082a46ee0)
-        C:/Go/src/net/http/server.go:2081 +0x1a5
-net/http.(*conn).serve(0xc082116200)
-        C:/Go/src/net/http/server.go:1472 +0xf35
-created by net/http.(*Server).Serve
-        C:/Go/src/net/http/server.go:2137 +0x455
-
-2016/06/02 16:55:56 http: panic serving 127.0.0.1:25576: runtime error: invalid memory address or nil pointer dereference
-goroutine 65 [running]:
-net/http.(*conn).serve.func1(0xc082212380)
-        C:/Go/src/net/http/server.go:1389 +0xc8
-panic(0x909ce0, 0xc082002080)
-        C:/Go/src/runtime/panic.go:426 +0x4f7
-main.hasNegotiateChallenge.func1(0x0, 0xc082103540, 0x1)
-        c:/sources/go/src/github.com/nilleb/authentication-proxy/gssapi-proxy.go:25 +0x23
-github.com/elazarl/goproxy.RespConditionFunc.HandleResp(0xaf9cc8, 0x0, 0xc082103540, 0x40dd9c)
-        c:/sources/go/src/github.com/elazarl/goproxy/dispatcher.go:43 +0x37
-github.com/elazarl/goproxy.(*ProxyConds).Do.func1(0x0, 0xc082103540, 0x9a2310)
-        c:/sources/go/src/github.com/elazarl/goproxy/dispatcher.go:280 +0x1c5
-github.com/elazarl/goproxy.FuncRespHandler.Handle(0xc082100fe0, 0x0, 0xc082103540, 0xc08304d080)
-        c:/sources/go/src/github.com/elazarl/goproxy/actions.go:35 +0x37
-github.com/elazarl/goproxy.(*ProxyHttpServer).filterResponse(0xc08205cb80, 0x0, 0xc082103540, 0x0)
-        c:/sources/go/src/github.com/elazarl/goproxy/proxy.go:69 +0xe4
-github.com/elazarl/goproxy.(*ProxyHttpServer).ServeHTTP(0xc08205cb80, 0x11fb9e8, 0xc082f9c680, 0xc0832381c0)
-        c:/sources/go/src/github.com/elazarl/goproxy/proxy.go:115 +0x565
-net/http.serverHandler.ServeHTTP(0xc08205cc80, 0x11fb9e8, 0xc082f9c680, 0xc0832381c0)
-        C:/Go/src/net/http/server.go:2081 +0x1a5
-net/http.(*conn).serve(0xc082212380)
-        C:/Go/src/net/http/server.go:1472 +0xf35
-created by net/http.(*Server).Serve
-        C:/Go/src/net/http/server.go:2137 +0x455
+This exception still needs to be handled correctly:
+it happens because 
+if the client connects to HTTP
+and the server responds 301/302 => HTTPS
+goproxy will automatically make a CONNECT
+and the handler won't be able to detect that it is being called during the response to the CONNECT instead of the first GET

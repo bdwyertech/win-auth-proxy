@@ -9,6 +9,12 @@ import (
     "os"
     "net/url"
     "strings"
+    "bufio"
+    "net"
+    "errors"
+    "io/ioutil"
+    "io"
+    "crypto/tls"
 )
 
 func contains(s []string, e string) bool {
@@ -39,11 +45,10 @@ func authenticate(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 
     spn := "http/" + strings.ToUpper(strings.Split(r.Request.Host,":")[0])
 
-    ticket:= impl.GetTicket(ctx, spn)
+    ticket:= impl.GetTicket(spn)
 
     // Generate the Authorization header
     headerstr := "Negotiate " + base64.StdEncoding.EncodeToString(ticket)
-    ctx.Logf("Generated header %s", headerstr)
 
     // Modify the original request, and rerun the request
     ctx.Req.Header["Authorization"] = []string{headerstr}
@@ -51,6 +56,7 @@ func authenticate(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
     newr, err := client.Do(ctx.Req)
     if err != nil {
         ctx.Warnf("New request failed: %v", err)
+        return r
     }
     ctx.Logf("Got response, forwarding it back to client")
 
@@ -61,7 +67,7 @@ func authenticate(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 // when the client tries to establish an HTTPS connection
 // INFO: Running 0 CONNECT handlers
 // => memory leak
-// the client gets a 502 (Bad Gateway)
+// the client gets a 502 (Bad Gateway) returned by goproxy httpError
 // elazarl/goproxy/https.go: line 96: proxy.connectDial fails: the corporate proxy returns 407 with a Proxy-Authenticate header, but the OnResponse handler is not triggered!
 // how to alter the connectDial request in order to inject the required Proxy-Authorization header?
 func authenticateProxy(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
@@ -72,11 +78,10 @@ func authenticateProxy(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
     // Forefront TMG sets the 'Via' header. This header contains the name of the host after a version number.
     // otherwise, the r.Header["Negotiate"] could contain a Basic realm="fqdn"  
     spn := strings.Split(r.Header["Via"][0], " ")[1]
-    ticket:= impl.GetTicket(ctx, spn)
+    ticket:= impl.GetTicket(spn)
 
     // Generate the Authorization header
     headerstr := "Negotiate " + base64.StdEncoding.EncodeToString(ticket)
-    ctx.Logf("Generated header %s", headerstr)
 
     // Modify the original request, and rerun the request
     ctx.Req.Header["Proxy-Authorization"] = []string{headerstr}
@@ -84,6 +89,7 @@ func authenticateProxy(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
     newr, err := client.Do(ctx.Req)
     if err != nil {
         ctx.Warnf("New request failed: %v", err)
+        return r
     }
     ctx.Logf("Got response, forwarding it back to client")
 
@@ -103,10 +109,130 @@ func getHTTPClient() http.Client {
 }
 
 
-// TraceRequests empty comment
-func TraceRequests(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+func traceRequests(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
     ctx.Logf("requesting %s, %s", r.Host, r.URL)
     return r, nil
+}
+
+func authenticatedConnectRequest(addr string, resp *http.Response) *http.Request {
+    impl := CurrentOsGssImplementation{}
+
+    spn := strings.Split(resp.Header["Via"][0], " ")[1]
+    ticket:= impl.GetTicket(spn)
+
+    // Generate the Authorization header
+    headerstr := "Negotiate " + base64.StdEncoding.EncodeToString(ticket)
+
+    connectReq := &http.Request{
+        Method: "CONNECT",
+        URL:    &url.URL{Opaque: addr},
+        Host:   addr,
+        Header: make(http.Header),
+    }
+    // Modify the original request, and rerun the request
+    connectReq.Header["Proxy-Authorization"] = []string{headerstr}
+    return connectReq
+}
+
+func dial(proxy *goproxy.ProxyHttpServer, network, addr string) (c net.Conn, err error) {
+	if proxy.Tr.Dial != nil {
+		return proxy.Tr.Dial(network, addr)
+	}
+	return net.Dial(network, addr)
+}
+
+func myNewConnectDialToProxy(proxy *goproxy.ProxyHttpServer, https_proxy string) func(network, addr string) (net.Conn, error) {
+	u, err := url.Parse(https_proxy)
+	if err != nil {
+		return nil
+	}
+	if u.Scheme == "" || u.Scheme == "http" {
+		if strings.IndexRune(u.Host, ':') == -1 {
+			u.Host += ":80"
+		}
+		return func(network, addr string) (net.Conn, error) {
+			connectReq := &http.Request{
+				Method: "CONNECT",
+				URL:    &url.URL{Opaque: addr},
+				Host:   addr,
+				Header: make(http.Header),
+			}
+			c, err := dial(proxy, network, u.Host)
+			if err != nil {
+				return nil, err
+			}
+			connectReq.Write(c)
+			// Read response.
+			// Okay to use and discard buffered reader here, because
+			// TLS server will not speak until spoken to.
+			br := bufio.NewReader(c)
+			resp, err := http.ReadResponse(br, connectReq)
+			if err != nil {
+				c.Close()
+				return nil, err
+			}
+            if resp.StatusCode == 407 {
+                c.Close()
+                c, err := dial(proxy, network, u.Host)
+                if err != nil {
+                    return nil, err
+                }
+                connectReq = authenticatedConnectRequest(addr, resp)
+                connectReq.Write(c)
+                // Read response.
+                // Okay to use and discard buffered reader here, because
+                // TLS server will not speak until spoken to.
+                br := bufio.NewReader(c)
+                resp, err = http.ReadResponse(br, connectReq)
+                if err != nil {
+                    c.Close()
+                    return nil, err
+                }
+            }
+			if resp.StatusCode != 200 {
+				resp, _ := ioutil.ReadAll(resp.Body)
+				c.Close()
+				return nil, errors.New("proxy refused connection " + string(resp))
+			}
+			return c, nil
+		}
+	}
+	if u.Scheme == "https" {
+		if strings.IndexRune(u.Host, ':') == -1 {
+			u.Host += ":443"
+		}
+		return func(network, addr string) (net.Conn, error) {
+			c, err := dial(proxy, network, u.Host)
+			if err != nil {
+				return nil, err
+			}
+			c = tls.Client(c, proxy.Tr.TLSClientConfig)
+			connectReq := &http.Request{
+				Method: "CONNECT",
+				URL:    &url.URL{Opaque: addr},
+				Host:   addr,
+				Header: make(http.Header),
+			}
+			connectReq.Write(c)
+			// Read response.
+			// Okay to use and discard buffered reader here, because
+			// TLS server will not speak until spoken to.
+			br := bufio.NewReader(c)
+			resp, err := http.ReadResponse(br, connectReq)
+			if err != nil {
+				c.Close()
+				return nil, err
+			}
+			if resp.StatusCode != 200 {
+				body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 500))
+				resp.Body.Close()
+				c.Close()
+				return nil, errors.New("proxy refused connection" + string(body))
+			}
+			return c, nil
+		}
+	}
+	return nil
 }
 
 var opts Arguments
@@ -125,50 +251,14 @@ func main() {
     
     proxy := goproxy.NewProxyHttpServer()
     
-    proxy.OnRequest().DoFunc(TraceRequests)
-    /*
-    hijack connect: intercept the request, add the Proxy-Authorization header then send it to the remote host
-    proxy.OnRequest().HijackConnect(func(req *http.Request, client net.Conn, ctx *goproxy.ProxyCtx) {
-		defer func() {
-			if e := recover(); e != nil {
-				ctx.Logf("error connecting to remote: %v", e)
-				client.Write([]byte("HTTP/1.1 500 Cannot reach destination\r\n\r\n"))
-			}
-			client.Close()
-		}()
-		clientBuf := bufio.NewReadWriter(bufio.NewReader(client), bufio.NewWriter(client))
-		remote, err := net.Dial("tcp", req.URL.Host)
-		orPanic(err)
-		remoteBuf := bufio.NewReadWriter(bufio.NewReader(remote), bufio.NewWriter(remote))
-		for {
-			req, err := http.ReadRequest(clientBuf.Reader)
-			orPanic(err)
-			orPanic(req.Write(remoteBuf))
-			orPanic(remoteBuf.Flush())
-			resp, err := http.ReadResponse(remoteBuf.Reader, req)
-			orPanic(err)
-			orPanic(resp.Write(clientBuf.Writer))
-			orPanic(clientBuf.Flush())
-		}
-	})
-    */
-    
-    // behave as a MITM
-    // the client fails with a TrustFailure (Le certificat distant n'est pas valide selon la procédure de validation.)
-    // probably because the client expects an SSL Hello, but it receives a plain HTTP response
-    /*proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
-	proxy.OnRequest().DoFunc(func (req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		if req.URL.Scheme == "https" {
-			req.URL.Scheme = "http"
-		}
-		return req, nil
-	})*/
+    proxy.OnRequest().DoFunc(traceRequests)
     
     proxy.Verbose = true
 
     if opts.proxy != "" {
         // transfer all the requests via the proxy specified on the command line as first positional argument
         proxy.Tr.Proxy = func (req *http.Request) (*url.URL, error) { return url.Parse(opts.proxy) }
+        proxy.ConnectDial = myNewConnectDialToProxy(proxy, opts.proxy)
     }
 
     proxy.OnResponse(hasNegotiateChallenge()).DoFunc(authenticate)
