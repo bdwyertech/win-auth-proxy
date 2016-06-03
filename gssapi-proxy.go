@@ -194,6 +194,7 @@ func myNewConnectDialToProxy(proxy *goproxy.ProxyHttpServer, https_proxy string)
 				c.Close()
 				return nil, errors.New("proxy refused connection " + string(resp))
 			}
+            // problem: somewhere, the TCP channel is being closed...
 			return c, nil
 		}
 	}
