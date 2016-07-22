@@ -3,7 +3,7 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/elazarl/goproxy"
+    "github.com/nilleb/goproxy"
     "encoding/base64"
     "net/http"
     "os"
@@ -114,6 +114,7 @@ func traceRequests(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http
     return r, nil
 }
 
+/*
 func authenticatedConnectRequest(addr string, resp *http.Response) *http.Request {
     impl := CurrentOsGssImplementation{}
 
@@ -235,6 +236,7 @@ func myNewConnectDialToProxy(proxy *goproxy.ProxyHttpServer, https_proxy string)
 	}
 	return nil
 }
+*/
 
 var opts Arguments
 
@@ -259,7 +261,7 @@ func main() {
     if opts.proxy != "" {
         // transfer all the requests via the proxy specified on the command line as first positional argument
         proxy.Tr.Proxy = func (req *http.Request) (*url.URL, error) { return url.Parse(opts.proxy) }
-        proxy.ConnectDial = myNewConnectDialToProxy(proxy, opts.proxy)
+        //proxy.ConnectDial = myNewConnectDialToProxy(proxy, opts.proxy)
     }
 
     proxy.OnResponse(hasNegotiateChallenge()).DoFunc(authenticate)
