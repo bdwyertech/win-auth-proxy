@@ -9,12 +9,12 @@ import (
     "os"
     "net/url"
     "strings"
-    "bufio"
+    /*"bufio"
     "net"
     "errors"
     "io/ioutil"
     "io"
-    "crypto/tls"
+    "crypto/tls"*/
 )
 
 func contains(s []string, e string) bool {
