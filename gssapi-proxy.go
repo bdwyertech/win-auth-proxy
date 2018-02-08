@@ -166,7 +166,7 @@ func (c *Credentials) NewContext(target string) (*Context, SECURITY_STATUS, erro
 
 func HasNegotiateChallenge() goproxy.RespConditionFunc {
     return func(resp *http.Response, ctx *goproxy.ProxyCtx) bool {
-        return ((resp.StatusCode == 401) && (len(resp.Header["Www-Authenticate"])>0))
+        return ((resp.StatusCode == 407) && (len(resp.Header["Proxy-Authenticate"])>0))
     }
 }
 
@@ -178,7 +178,7 @@ func main() {
     proxy.Tr = &http.Transport { Proxy: func (req *http.Request) (*url.URL, error) { return url.Parse(os.Args[1]) } }
 
     proxy.OnResponse(HasNegotiateChallenge()).DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx)*http.Response {
-        ctx.Logf("Received 401 and Www-Authenticate from server, proceeding to reply")
+        ctx.Logf("Received 407 and Proxy-Authenticate from server, proceeding to reply")
 
         // Acquire credentials
         cred, status, err := AcquireCredentials("")
@@ -202,7 +202,7 @@ func main() {
         ctx.Logf("Generated header %s", headerstr)
 
         // Modify the original request, and rerun the request
-        ctx.Req.Header["Authorization"] = []string{headerstr}
+        ctx.Req.Header["Proxy-Authorization"] = []string{headerstr}
         client := http.Client{}
         newr, err := client.Do(ctx.Req)
         if err != nil {
@@ -213,5 +213,5 @@ func main() {
         // Return the new response in place of the original
         return newr
         })
-log.Fatal(http.ListenAndServe(":8080", proxy))
+log.Fatal(http.ListenAndServe(":3128", proxy))
 }
