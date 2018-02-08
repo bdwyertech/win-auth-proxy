@@ -207,14 +207,7 @@ func main() {
         ctx.Req.Header["Proxy-Authorization"] = []string{headerstr}
         
         // We need to make sure it goes through the proxy URL again
-        proxyURL := url.URL{Host: os.Args[1]}
-        ctx.Logf("Proxy URL is: %s", proxyURL)
-
-        transport := &http.Transport{
-            Proxy:           http.ProxyURL(&proxyURL),
-            TLSClientConfig: &tls.Config{},
-            }
-    
+        transport := &http.Transport { Proxy: func (req *http.Request) (*url.URL, error) { return url.Parse(os.Args[1]) } }
         client := &http.Client{Transport: transport}
 
         newr, err := client.Do(ctx.Req)
