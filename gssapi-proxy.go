@@ -204,6 +204,9 @@ func main() {
 
         // Modify the original request, and rerun the request
         ctx.Req.Header["Proxy-Authorization"] = []string{headerstr}
+        ctx.Logf(ctx.Req.Header)
+        ctx.Logf(ctx.Req)
+        
         client := http.Client{}
         newr, err := client.Do(ctx.Req)
         if err != nil {
