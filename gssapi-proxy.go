@@ -1,6 +1,7 @@
 package main
 
 import (
+"flag"
 "fmt"
 "log"
 "syscall"
@@ -171,6 +172,12 @@ func HasNegotiateChallenge() goproxy.RespConditionFunc {
 }
 
 func main() {
+    
+    flag.Parse()
+    
+    auth_proxy_host = flag.Arg(0)
+    auth_proxy_port = flag.Arg(1)
+    
     proxy := goproxy.NewProxyHttpServer()
     proxy.Verbose = true
 
@@ -189,7 +196,7 @@ func main() {
         ctx.Logf("AcquireCredentials success: status=0x%x", status)
 
         // Initialize Context
-        tgt := "http/" + strings.ToUpper(strings.Split(r.Request.Host,":")[0])
+        tgt := "http/" + strings.ToUpper(auth_proxy_host)
         ctx.Logf("Requesting for context against SPN %s",tgt)
         ctxt, status, err := cred.NewContext(tgt)
         if err != nil {
