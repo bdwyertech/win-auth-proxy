@@ -1,7 +1,6 @@
 package main
 
 import (
-"flag"
 "fmt"
 "log"
 "syscall"
@@ -172,11 +171,6 @@ func HasNegotiateChallenge() goproxy.RespConditionFunc {
 }
 
 func main() {
-    
-    flag.Parse()
-    
-    auth_proxy_host := flag.Arg(0)
-    auth_proxy_port := flag.Arg(1)
     
     proxy := goproxy.NewProxyHttpServer()
     proxy.Verbose = true
