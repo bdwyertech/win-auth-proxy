@@ -11,7 +11,6 @@ import (
 "strings"
 "os"
 "net/url"
-"crypto/tls"
 )
 
 var (
