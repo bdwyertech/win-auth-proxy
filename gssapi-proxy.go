@@ -190,7 +190,7 @@ func main() {
         ctx.Logf("AcquireCredentials success: status=0x%x", status)
 
         // Initialize Context
-        tgt := "http/" + strings.ToUpper(strings.Split(os.Args[1], ",")[0])
+        tgt := "http/" + strings.ToUpper(strings.Split(os.Args[1], ":")[0])
         ctx.Logf("Requesting for context against SPN %s",tgt)
         ctxt, status, err := cred.NewContext(tgt)
         if err != nil {
