@@ -16,7 +16,7 @@ A patch for CNTLM allows you to use the Negotiate protocol (avoiding the need fo
 The following command will build the application.
 
 ```
-go get github.com/nilleb/authentication-proxy
+go get github.com/qichaozhao/authentication-proxy
 ```
 
 ## User manual
@@ -25,8 +25,8 @@ go get github.com/nilleb/authentication-proxy
 	:: this proxy supports Negotiate or NTLM
     > .\authentication-proxy.exe http://a_corporate_proxy:80
 
-    :: authentication-proxy listens on 8080
-    > set HTTPS_PROXY=http://127.0.0.1:8080
+    :: authentication-proxy listens on 3128
+    > set HTTPS_PROXY=http://127.0.0.1:3128
 
     :: one of the following ..
     > npm install
