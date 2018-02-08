@@ -11,6 +11,7 @@ import (
 "strings"
 "os"
 "net/url"
+"crypto/tls"
 )
 
 var (
@@ -202,12 +203,19 @@ func main() {
         headerstr := "Negotiate " + base64.StdEncoding.EncodeToString(ctxt.Data[0:ctxt.Buffer.Count])
         ctx.Logf("Generated header %s", headerstr)
 
-        // Modify the original request, and rerun the request
+        // Modify the original request, and re run the request
         ctx.Req.Header["Proxy-Authorization"] = []string{headerstr}
-        ctx.Logf(ctx.Req.Header)
-        ctx.Logf(ctx.Req)
         
-        client := http.Client{}
+        // We need to make sure it goes through the proxy URL again
+        proxyURL := url.URL{Host: os.Args[1]}
+
+        transport := &http.Transport{
+            Proxy:           http.ProxyURL(&proxyURL),
+            TLSClientConfig: &tls.Config{},
+            }
+    
+        client := &http.Client{Transport: transport}
+
         newr, err := client.Do(ctx.Req)
         if err != nil {
             ctx.Warnf("New request failed: %v", err)
