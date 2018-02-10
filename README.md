@@ -12,7 +12,7 @@ Many package managers and source control managers are not able to perform a Nego
 
 This means that npm, git, docker, bower and so on will be unable to pass through a corporate proxy. Some tools, like CNTLM, allow you to pass your NTLM token to the proxy. This is a different protocol, less secure than Negotiate. CNTLM is configured by writing your username/domain/encrypted password to a file.
 
-A patch for CNTLM allows you to use the Negotiate protocol (avoiding the need for a password saved in a file), but no binary is available nowadays.
+A patch for CNTLM allows you to use the Negotiate protocol (avoiding the need for a password saved in a file), but I've not found a working binary, and compiling my own leads to CNTLM crashing with segfaults which I have no idea how to fix.
 
 ## Building
 
