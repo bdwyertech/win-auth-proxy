@@ -44,3 +44,4 @@ go get github.com/qichaozhao/authentication-proxy
 * The application does not change any headers besides Proxy-Authorization intentionally.
 * Works only on Windows (because of the syscalls being called)
 * The application acts as a MITM proxy for the purposes of SSL connections, so you will need to disregard SSL certificate warnings (or install the self signed certificate) in order to use this tool. I would be welcome to any PR that allows this to seamlessly proxy SSL requests without certificate issues, but I haven't been able to figure this out myself (SSL is hard!)
+
