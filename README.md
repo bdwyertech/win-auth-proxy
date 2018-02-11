@@ -1,4 +1,4 @@
-# authentication-proxy
+# win-auth-proxy
 
 A simple Windows Authentication proxy.
 
