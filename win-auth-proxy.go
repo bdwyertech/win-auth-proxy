@@ -240,13 +240,36 @@ func main() {
 			proxy.Tr = &http.Transport {
 				Proxy: func (req *http.Request) (*url.URL, error) { return url.Parse(os.Args[1]) },
 				ProxyConnectHeader: http.Header{
-					"Proxy-Authorization": {auth_data},
+				"Proxy-Authorization": {auth_data},
 				},
 			}
 	
-			req.Header.Set("Proxy-Authorization", auth_data)
 			return req, nil
 	})
+	
+	// Handle HTTP authenticate responses
+    proxy.OnResponse(HasNegotiateChallenge()).DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx)*http.Response {
+        ctx.Logf("Received 407 and Proxy-Authenticate from server, proceeding to reply")
+		
+		headerstr := getAuthorizationHeader(os.Args[1])
+		
+        // Modify the original request, and rerun the request
+        ctx.Req.Header["Proxy-Authorization"] = []string{headerstr}
+        client := http.Client{
+			Transport: proxy.Tr,
+		}
+		
+        newr, err := client.Do(ctx.Req)
+        
+		if err != nil {
+            ctx.Warnf("New request failed: %v", err)
+        }
+        
+		ctx.Logf("Got response, forwarding it back to client")
+
+        // Return the new response in place of the original
+        return newr
+        })
 	
 	log.Fatal(http.ListenAndServe(":3128", proxy))
 	

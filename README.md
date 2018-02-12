@@ -38,10 +38,9 @@ go get github.com/qichaozhao/authentication-proxy
 
 ## Notes
 
-* You must run the application as user having a valid kerberos session ticket (i.e. log in with your corporate identity, then start this software)
+* You must run the application as user having a valid kerberos session ticket (i.e. log in with your corporate identity, then start this software). You may need to refresh your kerberos sessions every now and then by logging out (not just locking your screen) and logging in again.
 * Does not reply to mutual authentication request, but it's probably somewhat rare to bump into with web applications.
 * 64-bit platforms should still offer 32-bit compatible library/API so the application should compile and work. There's afaik no reason for which the application should be 64-bit.
 * The application does not change any headers besides Proxy-Authorization intentionally.
 * Works only on Windows (because of the syscalls being called)
 * The application acts as a MITM proxy for the purposes of SSL connections, so you will need to disregard SSL certificate warnings (or install the self signed certificate) in order to use this tool. I would be welcome to any PR that allows this to seamlessly proxy SSL requests without certificate issues, but I haven't been able to figure this out myself (SSL is hard!)
-
