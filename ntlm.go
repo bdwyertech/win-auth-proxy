@@ -13,7 +13,7 @@ import (
 	"net/url"
 	"strings"
 
-	ntlmssp "github.com/Azure/go-ntlmssp"
+	ntlm_sspi "github.com/alexbrainman/sspi/ntlm"
 )
 
 // DialContext is the DialContext function that should be wrapped with a
@@ -25,22 +25,30 @@ import (
 type DialContext func(ctx context.Context, network, addr string) (net.Conn, error)
 
 // WrapDialContext wraps a DialContext with an NTLM Authentication to a proxy.
-func WrapDialContext(dialContext DialContext, proxyAddress, proxyUsername, proxyPassword, proxyDomain string) DialContext {
+func WrapDialContext(dialContext DialContext, proxyAddress string) DialContext {
 	return func(ctx context.Context, network, addr string) (net.Conn, error) {
 		conn, err := dialContext(ctx, network, proxyAddress)
 		if err != nil {
 			log.Printf("ntlm> Could not call dial context with proxy: %s", err)
 			return conn, err
 		}
-		// NTLM Step 1: Send Negotiate Message
-		negotiateMessage, err := ntlmssp.NewNegotiateMessage(proxyDomain, "")
+
+		cred, err := ntlm_sspi.AcquireCurrentUserCredentials()
 		if err != nil {
-			log.Printf("ntlm> Could not negotiate domain '%s': %s", proxyDomain, err)
-			return conn, err
+			log.Fatal(err)
 		}
-		log.Printf("ntlm> NTLM negotiate message: '%s'", base64.StdEncoding.EncodeToString(negotiateMessage))
+		defer cred.Release()
+
+		secctx, negotiate, err := ntlm_sspi.NewClientContext(cred)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer secctx.Release()
+
+		// NTLM Step 1: Send Negotiate Message
+		log.Printf("ntlm> NTLM negotiate message: '%s'", base64.StdEncoding.EncodeToString(negotiate))
 		header := make(http.Header)
-		header.Set("Proxy-Authorization", fmt.Sprintf("NTLM %s", base64.StdEncoding.EncodeToString(negotiateMessage)))
+		header.Set("Proxy-Authorization", fmt.Sprintf("NTLM %s", base64.StdEncoding.EncodeToString(negotiate)))
 		header.Set("Proxy-Connection", "Keep-Alive")
 		connect := &http.Request{
 			Method: "CONNECT",
@@ -82,8 +90,8 @@ func WrapDialContext(dialContext DialContext, proxyAddress, proxyUsername, proxy
 			return conn, err
 		}
 		// NTLM Step 3: Send Authorization Message
-		log.Printf("ntlm> Processing NTLM challenge with username '%s' and password with length %d", proxyUsername, len(proxyPassword))
-		authenticateMessage, err := ntlmssp.ProcessChallenge(challengeMessage, proxyUsername, proxyPassword)
+		log.Printf("ntlm> Processing NTLM challenge")
+		authenticateMessage, err := secctx.Update(challengeMessage)
 		if err != nil {
 			log.Printf("ntlm> Could not process the NTLM challenge: %s", err)
 			return conn, err
