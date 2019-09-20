@@ -3,15 +3,30 @@ package main
 import (
 	"crypto/tls"
 	"github.com/elazarl/goproxy"
+	"golang.org/x/sys/windows/registry"
 	"log"
 	"net"
 	"net/http"
-	"os"
+	// "os"
 	"regexp"
 	"time"
 )
 
 func main() {
+	// Pull Proxy from the Registry
+	k, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer k.Close()
+
+	// proxyServer := os.Args[1]
+	proxyServer, _, err := k.GetStringValue("ProxyServer")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Forwarding Proxy is: %q\n", proxyServer)
+
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = true
 
@@ -21,8 +36,7 @@ func main() {
 	}
 
 	var AlwaysMitmAuth goproxy.FuncHttpsHandler = func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
-		// Transfer all the requests via the proxy specified on the command line as first positional argument
-		ntlmDialContext := WrapDialContext(dialer.DialContext, os.Args[1])
+		ntlmDialContext := WrapDialContext(dialer.DialContext, proxyServer)
 
 		proxy.Tr = &http.Transport{
 			Proxy:       nil,
@@ -65,9 +79,7 @@ func main() {
 	// Handle HTTP Connect Requests
 	proxy.OnRequest(goproxy.Not(goproxy.ReqHostMatches(regexp.MustCompile("^.*:443$")))).
 		DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-
-			// Transfer all the requests via the proxy specified on the command line as first positional argument
-			ntlmDialContext := WrapDialContext(dialer.DialContext, os.Args[1])
+			ntlmDialContext := WrapDialContext(dialer.DialContext, proxyServer)
 
 			proxy.Tr = &http.Transport{
 				Proxy:           nil,
